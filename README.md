@@ -19,11 +19,21 @@ The application source code belongs in the private `machulyak/moya` repository.
 
 Both channels are initialized as empty. No installable release is published yet.
 
+## Signature input format
+
+The Ed25519 signature is calculated over the UTF-8 bytes of the `payload` object serialized as JSON with:
+- object keys sorted lexicographically;
+- separators exactly `,` and `:` (no insignificant whitespace);
+- Unicode characters emitted directly (UTF-8), not escaped;
+- non-finite numbers forbidden; release schema values do not use floating-point numbers.
+
+The outer `signature` property is not part of the signed bytes. The updater must reject a ready manifest with a missing, unknown, or invalid signature.
+
 ## Release process
 
 1. Build and test a Windows release from the private source repository.
 2. Create the release manifest using [the schema](schemas/release-manifest.schema.json).
-3. Sign the canonical UTF-8 JSON bytes of the `payload` object with the offline Ed25519 private key.
+3. Sign the canonical payload bytes described above with the offline Ed25519 private key.
 4. Publish the package and signed manifest.
 5. Verify signature, SHA-256, package size, and upgrade/rollback behavior from a clean Windows test installation.
 6. Promote to Stable only after Beta validation.
