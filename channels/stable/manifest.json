@@ -1,0 +1,9 @@
+{
+  "payload": {
+    "schema_version": 1,
+    "channel": "stable",
+    "status": "empty",
+    "release": null
+  },
+  "signature": null
+}
