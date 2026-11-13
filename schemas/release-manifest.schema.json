@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MOYA signed update manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["payload", "signature"],
+  "properties": {
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "channel", "status", "release"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "channel": { "enum": ["stable", "beta"] },
+        "status": { "enum": ["empty", "ready"] },
+        "release": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["version", "published_at", "platform", "min_app_version", "artifact", "notes_url"],
+              "properties": {
+                "version": { "type": "string", "minLength": 1 },
+                "published_at": { "type": "string", "format": "date-time" },
+                "platform": { "const": "windows-x64" },
+                "min_app_version": { "type": "string", "minLength": 1 },
+                "artifact": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["url", "sha256", "size_bytes"],
+                  "properties": {
+                    "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+                    "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+                    "size_bytes": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                "notes_url": { "type": "string", "format": "uri", "pattern": "^https://" }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "empty" } } },
+          "then": { "properties": { "release": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "status": { "const": "ready" } } },
+          "then": { "properties": { "release": { "type": "object" } } }
+        }
+      ]
+    },
+    "signature": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algorithm", "key_id", "value"],
+          "properties": {
+            "algorithm": { "const": "Ed25519" },
+            "key_id": { "type": "string", "minLength": 1 },
+            "value": { "type": "string", "contentEncoding": "base64", "minLength": 1 }
+          }
+        }
+      ]
+    }
+  }
+}
